@@ -15,6 +15,7 @@
         <div class="dropdown-menu dropdown-menu-right">
           <%= link_to "Change password", rodauth.change_password_path, class: "dropdown-item" %>
           <%= link_to "Change email", rodauth.change_login_path, class: "dropdown-item" %>
+          <%= link_to "Manage MFA", rodauth.two_factor_manage_path, class: "dropdown-item" %>
           <div class="dropdown-divider"></div>
           <%= link_to "Close account", rodauth.close_account_path, class: "dropdown-item text-danger" %>
           <%= link_to "Sign out", rodauth.logout_path, method: :post, class: "dropdown-item" %>

@@ -6,8 +6,19 @@ class RodauthApp < Rodauth::Rails::App
       :reset_password, :change_password, :change_password_notify,
       :change_login, :verify_login_change,
       :close_account,
-      :otp
+      :sms_codes
 
+
+    class FakeSmsClient
+      def self.send_sms(to, message)
+        puts "\n>>>> SMS: to: #{to}, message: #{message}\n"
+        true
+      end
+    end
+
+    sms_send do |phone, message|
+      FakeSmsClient.send_sms(phone, message)
+    end
     # See the Rodauth documentation for the list of available config options:
     # http://rodauth.jeremyevans.net/documentation.html
 
@@ -34,6 +45,15 @@ class RodauthApp < Rodauth::Rails::App
     # Redirect back to originally requested location after authentication.
     # login_return_to_requested_location? true
     # two_factor_auth_return_to_requested_location? true # if using MFA
+
+    # redirect the user to the MFA page if they have MFA setup
+    login_redirect do
+      if uses_two_factor_authentication?
+        two_factor_auth_required_redirect
+      else
+        "/"
+      end
+    end
 
     # Autologin the user after they have reset their password.
     # reset_password_autologin? true
@@ -151,6 +171,10 @@ class RodauthApp < Rodauth::Rails::App
     rodauth.load_memory # autologin remembered users
 
     r.rodauth # route rodauth requests
+
+    if rodauth.logged_in? && rodauth.uses_two_factor_authentication?
+      rodauth.require_two_factor_authenticated
+    end
 
     if r.path.start_with?("/posts")
       rodauth.require_authentication
